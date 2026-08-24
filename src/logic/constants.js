@@ -1,9 +1,6 @@
-// src/logic/constants.js
-
 export const GACHA_CONFIG = {
   ROLL_COST: 100,
   INITIAL_POINTS: 1000,
-  // Zonas: El centro ahora te hace perder dinero (0.1x). Los bordes son el Jackpot (x25).
   MULTIPLIERS: [25, 4, 0.5, 0.1, 0.5, 4, 25],
   FRENZY_GOAL: 100,
   FRENZY_BALLS: 30,
@@ -12,13 +9,13 @@ export const GACHA_CONFIG = {
 export const BOARD_CONFIG = {
   width: 700,
   height: 700,
-  pegRadius: 7, // Clavos ligeramente más pequeños para que la bola caiga más fluida
+  pegRadius: 7,
   ballRadius: 12,
 };
 
 export const SHOP_CONFIG = {
   BOX_COST: 5000, 
-  PRESTIGE_COST: 50000, // Puntos necesarios para hacer Prestigio
+  PRESTIGE_COST: 50000,
 };
 
 export const UPGRADES = {
