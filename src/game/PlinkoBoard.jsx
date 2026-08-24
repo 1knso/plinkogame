@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react
 import Matter from 'matter-js';
 import { BOARD_CONFIG, GACHA_CONFIG } from '../logic/constants';
 
-// Funciones puras extraídas para evitar espagueti
 const createBoundaries = () => {
   const { width, height } = BOARD_CONFIG;
   const options = { isStatic: true, render: { visible: false } };
@@ -22,7 +21,7 @@ const createPegs = (startX, startY, rows, spacing) => {
       pegs.push(Matter.Bodies.circle(offsetX + col * spacing, startY + row * spacing, BOARD_CONFIG.pegRadius, {
         isStatic: true,
         restitution: 0.5,
-        render: { fillStyle: '#cbd5e1' } // Color más brillante
+        render: { fillStyle: '#cbd5e1' }
       }));
     }
   }
@@ -36,18 +35,11 @@ const createBuckets = () => {
 
   GACHA_CONFIG.MULTIPLIERS.forEach((mult, index) => {
     const x = (index * bucketWidth) + (bucketWidth / 2);
-    // Sensor que detecta la bola
     const bucket = Matter.Bodies.rectangle(x, height - 20, bucketWidth, 40, {
-      isStatic: true,
-      isSensor: true,
-      label: 'bucket',
-      multiplier: mult,
-      render: { visible: false }
+      isStatic: true, isSensor: true, label: 'bucket', multiplier: mult, render: { visible: false }
     });
-    // Paredes físicas de los botes
     const wall = Matter.Bodies.rectangle(index * bucketWidth, height - 30, 6, 60, {
-      isStatic: true,
-      render: { fillStyle: '#334155' }
+      isStatic: true, render: { fillStyle: '#334155' }
     });
     bodies.push(bucket, wall);
   });
@@ -59,70 +51,52 @@ const PlinkoBoard = forwardRef(({ onReward }, ref) => {
   const engineRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    dropBall: (xOffset = 0) => {
+    dropBall: (options = {}) => {
       if (!engineRef.current) return;
-      const startX = (BOARD_CONFIG.width / 2) + xOffset + (Math.random() * 10 - 5);
+      const startX = (BOARD_CONFIG.width / 2) + (Math.random() * 20 - 10); // Más dispersión natural
       
+      // Aplicar mejoras a la física
+      const restitution = options.bouncy ? 1.1 : 0.6;
+      const density = options.heavy ? 0.2 : 0.05;
+      const fillStyle = options.heavy ? '#3b82f6' : (options.bouncy ? '#a855f7' : '#facc15');
+
       const ball = Matter.Bodies.circle(startX, 20, BOARD_CONFIG.ballRadius, {
-        restitution: 0.8, // Rebote más frenético
-        friction: 0.005,
-        density: 0.05,
-        label: 'ball',
-        render: { fillStyle: '#facc15' } // Amarillo neón
+        restitution, friction: 0.001, density, label: 'ball', render: { fillStyle }
       });
-      
       Matter.World.add(engineRef.current.world, ball);
     }
   }));
 
   useEffect(() => {
     if (!canvasRef.current) return;
-
     const engine = Matter.Engine.create();
-    // Gravedad ligeramente ajustada para que caiga con más "peso"
     engine.world.gravity.y = 1.2; 
     engineRef.current = engine;
 
     const render = Matter.Render.create({
-      canvas: canvasRef.current,
-      engine: engine,
-      options: { 
-        width: BOARD_CONFIG.width, 
-        height: BOARD_CONFIG.height, 
-        wireframes: false, 
-        background: 'transparent' 
-      }
+      canvas: canvasRef.current, engine,
+      options: { width: BOARD_CONFIG.width, height: BOARD_CONFIG.height, wireframes: false, background: 'transparent' }
     });
 
-    const staticBodies = [
-      ...createBoundaries(), 
-      ...createPegs(BOARD_CONFIG.width / 2, 100, 12, 48), // Clavos más juntos y más filas
-      ...createBuckets()
-    ];
+    const staticBodies = [...createBoundaries(), ...createPegs(BOARD_CONFIG.width / 2, 100, 12, 48), ...createBuckets()];
     Matter.World.add(engine.world, staticBodies);
 
     Matter.Runner.run(Matter.Runner.create(), engine);
     Matter.Render.run(render);
 
     const handleCollision = (event) => {
-      event.pairs.forEach((pair) => {
-        const { bodyA, bodyB } = pair;
+      event.pairs.forEach(({ bodyA, bodyB }) => {
         const ball = bodyA.label === 'ball' ? bodyA : (bodyB.label === 'ball' ? bodyB : null);
         const bucket = bodyA.label === 'bucket' ? bodyA : (bodyB.label === 'bucket' ? bodyB : null);
 
         if (ball && bucket) {
           Matter.World.remove(engine.world, ball);
-          if (onReward) {
-            // Pasamos el multiplicador y el punto X exacto en porcentaje
-            const xPercent = (bucket.position.x / BOARD_CONFIG.width) * 100;
-            onReward(bucket.multiplier, xPercent);
-          }
+          if (onReward) onReward(bucket.multiplier, (bucket.position.x / BOARD_CONFIG.width) * 100);
         }
       });
     };
 
     Matter.Events.on(engine, 'collisionStart', handleCollision);
-
     return () => {
       Matter.Events.off(engine, 'collisionStart', handleCollision);
       Matter.Render.stop(render);
