@@ -1,82 +1,106 @@
 import React, { useState } from 'react';
 import { SHOP_CONFIG, UPGRADES } from '../../logic/constants';
 
-const UpgradeShop = ({ points, onBuy, inventory }) => {
+const UpgradeShop = ({ points, onBuy, inventory, prestigeLevel, onPrestige }) => {
   const [isRolling, setIsRolling] = useState(false);
   const [revealed, setRevealed] = useState(null);
 
+  const totalUpgrades = Object.keys(UPGRADES).length;
+  const hasAllUpgrades = inventory.length >= totalUpgrades;
+  const canPrestige = hasAllUpgrades && points >= SHOP_CONFIG.PRESTIGE_COST;
+
   const handlePull = () => {
-    if (points < SHOP_CONFIG.BOX_COST || isRolling) return;
+    if (points < SHOP_CONFIG.BOX_COST || isRolling || hasAllUpgrades) return;
     setIsRolling(true);
     setRevealed(null);
     onBuy(SHOP_CONFIG.BOX_COST);
 
-    // Seleccionar mejora aleatoria que no se tenga (o repetida si las tiene todas)
-    const upgradeKeys = Object.keys(UPGRADES);
-    const randomKey = upgradeKeys[Math.floor(Math.random() * upgradeKeys.length)];
-    const wonUpgrade = UPGRADES[randomKey];
-
-    // Simular tiempo de animación de la caja (1.5s)
+    const unownedKeys = Object.keys(UPGRADES).filter(key => !inventory.includes(key));
+    const randomKey = unownedKeys[Math.floor(Math.random() * unownedKeys.length)];
+    
     setTimeout(() => {
-      setRevealed(wonUpgrade);
+      setRevealed(UPGRADES[randomKey]);
       setIsRolling(false);
     }, 1500);
   };
 
   return (
-    <div className="w-full h-full p-6 flex flex-col items-center justify-center bg-slate-900 text-white overflow-hidden">
+    <div className="w-full h-full p-4 flex flex-col bg-slate-950 text-white overflow-y-auto pb-20">
       
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-black uppercase tracking-widest text-yellow-400 drop-shadow-md">Black Market</h2>
-        <p className="text-slate-400 text-sm mt-2">Desbloquea habilidades permanentes</p>
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-black uppercase text-purple-400">Black Market</h2>
+        <p className="text-slate-400 text-xs">Mejoras actuales: {inventory.length}/{totalUpgrades}</p>
+        {prestigeLevel > 0 && (
+          <div className="mt-2 text-yellow-400 font-bold text-sm bg-yellow-400/10 py-1 rounded-full border border-yellow-400/20">
+            Nivel de Prestigio: {prestigeLevel} (+{prestigeLevel * 20}% Beneficios)
+          </div>
+        )}
       </div>
 
-      {/* Zona Central: La Caja o la Recompensa */}
-      <div className="h-64 w-full flex items-center justify-center relative">
+      {/* Gacha de Mejoras */}
+      <div className="flex-shrink-0 h-48 w-full flex items-center justify-center relative mb-6">
         {isRolling && (
-          <div className="w-32 h-32 bg-slate-700 border-4 border-slate-500 rounded-2xl animate-gacha-shake flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+          <div className="w-24 h-24 bg-slate-800 border-2 border-slate-500 rounded-xl animate-gacha-shake flex items-center justify-center">
             <span className="text-4xl">📦</span>
           </div>
         )}
-
         {revealed && !isRolling && (
           <div className="flex flex-col items-center animate-gacha-reveal z-10" style={{ color: revealed.color }}>
-            <div className="w-24 h-24 rounded-full border-4 flex items-center justify-center mb-4 bg-slate-800 shadow-[0_0_40px_currentColor]">
-              <span className="text-4xl font-black">✨</span>
-            </div>
-            <h3 className="text-2xl font-black uppercase drop-shadow-md">{revealed.name}</h3>
-            <p className="text-slate-300 text-center text-sm px-8 mt-2">{revealed.desc}</p>
+            <span className="text-4xl font-black mb-2">✨</span>
+            <h3 className="text-xl font-black uppercase">{revealed.name}</h3>
+            <p className="text-slate-300 text-center text-xs px-4">{revealed.desc}</p>
           </div>
         )}
-
         {!isRolling && !revealed && (
-          <div className="w-32 h-32 bg-slate-800 border-4 border-slate-600 rounded-2xl flex items-center justify-center opacity-80">
+          <div className="w-24 h-24 bg-slate-800 border-2 border-slate-700 rounded-xl flex items-center justify-center opacity-80">
              <span className="text-4xl opacity-50">📦</span>
           </div>
         )}
       </div>
 
-      {/* Botón de Compra */}
-      <div className="mt-10 w-full max-w-xs">
-        <button
-          onClick={handlePull}
-          disabled={points < SHOP_CONFIG.BOX_COST || isRolling}
-          className={`relative w-full py-5 text-xl font-black uppercase transition-all duration-100 rounded-xl overflow-hidden ${
-            points >= SHOP_CONFIG.BOX_COST && !isRolling
-              ? 'bg-gradient-to-t from-purple-700 to-fuchsia-500 text-white shadow-[0_6px_0_rgb(126,34,206)] hover:translate-y-1 hover:shadow-[0_2px_0_rgb(126,34,206)] active:translate-y-2 active:shadow-none'
-              : 'bg-slate-800 text-slate-500 shadow-[0_6px_0_rgb(30,41,59)] cursor-not-allowed'
-          }`}
-        >
-          <span className="relative z-10">Abrir ({SHOP_CONFIG.BOX_COST} PTS)</span>
-        </button>
+      <button
+        onClick={handlePull}
+        disabled={points < SHOP_CONFIG.BOX_COST || isRolling || hasAllUpgrades}
+        className={`w-full max-w-sm mx-auto py-4 text-lg font-black uppercase rounded-xl transition-all mb-8 ${
+          points >= SHOP_CONFIG.BOX_COST && !isRolling && !hasAllUpgrades
+            ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_4px_0_rgb(107,33,168)] active:translate-y-1 active:shadow-none'
+            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+        }`}
+      >
+        {hasAllUpgrades ? 'Agotado' : `Abrir Caja (${SHOP_CONFIG.BOX_COST})`}
+      </button>
+
+      {/* Inventario Visible */}
+      <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto w-full mb-8">
+        {Object.values(UPGRADES).map(upg => {
+          const owned = inventory.includes(upg.id);
+          return (
+            <div key={upg.id} className={`p-3 rounded-lg border-2 flex flex-col items-center text-center transition-all ${owned ? 'border-current bg-slate-900/50' : 'border-slate-800 bg-slate-900 opacity-40 grayscale'}`} style={{ color: owned ? upg.color : '#334155' }}>
+              <span className="font-bold text-xs uppercase mb-1">{upg.name}</span>
+              <span className="text-[10px] text-slate-400 leading-tight">{upg.desc}</span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Inventario visual rápido */}
-      <div className="mt-8 flex gap-2">
-        {Object.values(UPGRADES).map(upg => (
-          <div key={upg.id} className={`w-3 h-3 rounded-full ${inventory.includes(upg.id) ? 'shadow-[0_0_10px_currentColor]' : 'bg-slate-800'}`} style={{ backgroundColor: inventory.includes(upg.id) ? upg.color : '' }} />
-        ))}
+      {/* Botón de Prestigio (Mecánica Infinita) */}
+      <div className="max-w-sm mx-auto w-full border-t-2 border-slate-800 pt-6 mt-auto">
+        <button
+          onClick={onPrestige}
+          disabled={!canPrestige}
+          className={`w-full py-4 text-lg font-black uppercase rounded-xl transition-all ${
+            canPrestige
+              ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black shadow-[0_4px_0_rgb(180,83,9)] animate-pulse active:translate-y-1 active:shadow-none'
+              : 'bg-slate-900 text-slate-700 border-2 border-slate-800 cursor-not-allowed'
+          }`}
+        >
+          Ascender ({SHOP_CONFIG.PRESTIGE_COST} pts)
+        </button>
+        <p className="text-center text-[10px] text-slate-500 mt-2">
+          Requiere todas las mejoras y {SHOP_CONFIG.PRESTIGE_COST} pts. Reinicia el progreso pero da un bonus global permanente.
+        </p>
       </div>
+
     </div>
   );
 };
