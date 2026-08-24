@@ -5,4 +5,25 @@
 body {
   margin: 0;
   padding: 0;
+  overflow: hidden; /* Evita scroll accidental en móviles al jugar */
+}
+
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  50% { transform: translateY(-40px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-1deg); }
+  75% { transform: translateX(5px) rotate(1deg); }
+}
+
+.animate-float-up {
+  animation: float-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
 }
