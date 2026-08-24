@@ -1,15 +1,13 @@
-// src/logic/constants.js
-
 export const GACHA_CONFIG = {
   ROLL_COST: 100,
   INITIAL_POINTS: 1000,
-  // Zonas de premio: Bordes difíciles (x10), centro fácil (x0.2)
-  MULTIPLIERS: [10, 2.5, 0.5, 0.2, 0.5, 2.5, 10] 
+  // Hacemos el premio máximo más jugoso (x20) para generar euforia
+  MULTIPLIERS: [20, 3, 0.5, 0.2, 0.5, 3, 20] 
 };
 
 export const BOARD_CONFIG = {
-  width: 800,
-  height: 800,
+  width: 700, // Ajustado para ser divisible exactamente por 7
+  height: 700,
   pegRadius: 8,
-  ballRadius: 12,
+  ballRadius: 13, // Bola un poco más grande y pesada
 };
