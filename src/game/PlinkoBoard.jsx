@@ -4,11 +4,11 @@ import { BOARD_CONFIG, GACHA_CONFIG } from '../logic/constants';
 
 const createBoundaries = () => {
   const { width, height } = BOARD_CONFIG;
-  const options = { isStatic: true, render: { visible: false } };
+  const opt = { isStatic: true, render: { visible: false } };
   return [
-    Matter.Bodies.rectangle(width / 2, height + 50, width, 100, options),
-    Matter.Bodies.rectangle(-25, height / 2, 50, height, options),
-    Matter.Bodies.rectangle(width + 25, height / 2, 50, height, options)
+    Matter.Bodies.rectangle(width / 2, height + 50, width, 100, opt),
+    Matter.Bodies.rectangle(-25, height / 2, 50, height, opt),
+    Matter.Bodies.rectangle(width + 25, height / 2, 50, height, opt)
   ];
 };
 
@@ -19,10 +19,7 @@ const createPegs = (startX, startY, rows, spacing) => {
     const offsetX = startX - (pegsInRow * spacing) / 2;
     for (let col = 0; col <= pegsInRow; col++) {
       pegs.push(Matter.Bodies.circle(offsetX + col * spacing, startY + row * spacing, BOARD_CONFIG.pegRadius, {
-        isStatic: true,
-        restitution: 0.3, // Rebote de los clavos más bajo para evitar dispersión extrema
-        friction: 0.05,
-        render: { fillStyle: '#cbd5e1' }
+        isStatic: true, restitution: 0.4, friction: 0.01, render: { fillStyle: '#cbd5e1' }
       }));
     }
   }
@@ -36,11 +33,13 @@ const createBuckets = () => {
 
   GACHA_CONFIG.MULTIPLIERS.forEach((mult, index) => {
     const x = (index * bucketWidth) + (bucketWidth / 2);
-    const bucket = Matter.Bodies.rectangle(x, height - 20, bucketWidth, 40, {
-      isStatic: true, isSensor: true, label: 'bucket', multiplier: mult, render: { visible: false }
+    // Sensor más bajito y con la propiedad bucketIndex para la UI
+    const bucket = Matter.Bodies.rectangle(x, height - 10, bucketWidth, 20, {
+      isStatic: true, isSensor: true, label: 'bucket', multiplier: mult, bucketIndex: index, render: { visible: false }
     });
-    const wall = Matter.Bodies.rectangle(index * bucketWidth, height - 30, 4, 60, {
-      isStatic: true, render: { fillStyle: '#334155' }
+    // Paredes más bajas (altura 30 en lugar de 60) con rebote para que no se queden encima
+    const wall = Matter.Bodies.rectangle(index * bucketWidth, height - 15, 6, 30, {
+      isStatic: true, restitution: 0.5, render: { fillStyle: '#475569' }
     });
     bodies.push(bucket, wall);
   });
@@ -54,11 +53,9 @@ const PlinkoBoard = forwardRef(({ onReward }, ref) => {
   useImperativeHandle(ref, () => ({
     dropBall: (options = {}) => {
       if (!engineRef.current) return;
-      
-      // La bola cae EXACTAMENTE en el centro para respetar la probabilidad de la campana de Gauss
       const startX = BOARD_CONFIG.width / 2 + (Math.random() * 2 - 1); 
       
-      const restitution = options.bouncy ? 0.9 : 0.4;
+      const restitution = options.bouncy ? 0.8 : 0.5;
       const density = options.heavy ? 0.2 : 0.05;
       const fillStyle = options.heavy ? '#3b82f6' : (options.bouncy ? '#a855f7' : '#facc15');
 
@@ -72,7 +69,7 @@ const PlinkoBoard = forwardRef(({ onReward }, ref) => {
   useEffect(() => {
     if (!canvasRef.current) return;
     const engine = Matter.Engine.create();
-    engine.world.gravity.y = 1.2; 
+    engine.world.gravity.y = 1.3; // Gravedad ligeramente mayor = más rapidez y euforia
     engineRef.current = engine;
 
     const render = Matter.Render.create({
@@ -80,8 +77,8 @@ const PlinkoBoard = forwardRef(({ onReward }, ref) => {
       options: { width: BOARD_CONFIG.width, height: BOARD_CONFIG.height, wireframes: false, background: 'transparent' }
     });
 
-    // Añadidas 14 filas para hacer más difícil llegar a los extremos
-    const staticBodies = [...createBoundaries(), ...createPegs(BOARD_CONFIG.width / 2, 80, 14, 42), ...createBuckets()];
+    // 12 filas (antes 14). Esto deja un gap enorme abajo para evitar atascos.
+    const staticBodies = [...createBoundaries(), ...createPegs(BOARD_CONFIG.width / 2, 70, 12, 44), ...createBuckets()];
     Matter.World.add(engine.world, staticBodies);
 
     Matter.Runner.run(Matter.Runner.create(), engine);
@@ -94,7 +91,8 @@ const PlinkoBoard = forwardRef(({ onReward }, ref) => {
 
         if (ball && bucket) {
           Matter.World.remove(engine.world, ball);
-          if (onReward) onReward(bucket.multiplier, (bucket.position.x / BOARD_CONFIG.width) * 100);
+          // Enviamos el índice exacto a React para encender la luz
+          if (onReward) onReward(bucket.multiplier, (bucket.position.x / BOARD_CONFIG.width) * 100, bucket.bucketIndex);
         }
       });
     };
