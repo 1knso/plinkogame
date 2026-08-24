@@ -5,9 +5,11 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Evita scroll accidental en móviles al jugar */
+  overflow: hidden;
+  touch-action: none; /* Crucial para apps móviles: bloquea el scroll nativo */
 }
 
+/* Animaciones existentes */
 @keyframes float-up {
   0% { opacity: 1; transform: translateY(0) scale(1); }
   50% { transform: translateY(-40px) scale(1.2); }
@@ -20,10 +22,26 @@ body {
   75% { transform: translateX(5px) rotate(1deg); }
 }
 
-.animate-float-up {
-  animation: float-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+/* Nuevas animaciones de la Tienda y Frenesí */
+@keyframes gacha-shake {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  10%, 30%, 50%, 70%, 90% { transform: scale(1.1) rotate(-3deg); }
+  20%, 40%, 60%, 80% { transform: scale(1.1) rotate(3deg); }
 }
 
-.animate-shake {
-  animation: shake 0.3s ease-in-out;
+@keyframes gacha-reveal {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
+
+@keyframes frenzy-flash {
+  0%, 100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+  50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.5); }
+}
+
+.animate-float-up { animation: float-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-shake { animation: shake 0.3s ease-in-out; }
+.animate-gacha-shake { animation: gacha-shake 1.5s ease-in-out forwards; }
+.animate-gacha-reveal { animation: gacha-reveal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+.animate-frenzy { animation: frenzy-flash 1s infinite; }
