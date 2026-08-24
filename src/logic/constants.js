@@ -3,26 +3,27 @@
 export const GACHA_CONFIG = {
   ROLL_COST: 100,
   INITIAL_POINTS: 1000,
-  MULTIPLIERS: [20, 3, 0.5, 0.2, 0.5, 3, 20],
-  FRENZY_GOAL: 100, // Bolas necesarias para el Frenesí
-  FRENZY_BALLS: 30, // Bolas que caen de golpe en el Frenesí
+  // Zonas: El centro ahora te hace perder dinero (0.1x). Los bordes son el Jackpot (x25).
+  MULTIPLIERS: [25, 4, 0.5, 0.1, 0.5, 4, 25],
+  FRENZY_GOAL: 100,
+  FRENZY_BALLS: 30,
 };
 
 export const BOARD_CONFIG = {
   width: 700,
   height: 700,
-  pegRadius: 8,
-  ballRadius: 13,
+  pegRadius: 7, // Clavos ligeramente más pequeños para que la bola caiga más fluida
+  ballRadius: 12,
 };
 
 export const SHOP_CONFIG = {
-  BOX_COST: 4000, // Coste de tirar en el Gacha de mejoras
+  BOX_COST: 5000, 
+  PRESTIGE_COST: 50000, // Puntos necesarios para hacer Prestigio
 };
 
-// Catálogo de mejoras que el jugador puede desbloquear
 export const UPGRADES = {
-  bouncy_balls: { id: 'bouncy_balls', name: 'Bolas Saltarinas', desc: 'Las bolas rebotan mucho más.', color: '#a855f7' },
-  heavy_balls: { id: 'heavy_balls', name: 'Bolas de Plomo', desc: 'Caen rápido y con precisión.', color: '#3b82f6' },
-  golden_luck: { id: 'golden_luck', name: 'Suerte Dorada', desc: 'Todos los premios suman +0.5x.', color: '#eab308' },
-  cheap_rolls: { id: 'cheap_rolls', name: 'VIP Ticket', desc: 'Tirar cuesta 20 pts menos.', color: '#ef4444' },
+  bouncy_balls: { id: 'bouncy_balls', name: 'Bolas de Goma', desc: 'Aumenta el rebote (llega más a los bordes).', color: '#a855f7' },
+  heavy_balls: { id: 'heavy_balls', name: 'Bolas de Plomo', desc: 'Caen más rápido y evitan atascos.', color: '#3b82f6' },
+  golden_luck: { id: 'golden_luck', name: 'Suerte Dorada', desc: 'Todos los multiplicadores base suman +0.5x.', color: '#eab308' },
+  cheap_rolls: { id: 'cheap_rolls', name: 'VIP Ticket', desc: 'Tirar te cuesta 20 pts menos siempre.', color: '#ef4444' },
 };
