@@ -6,42 +6,45 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  touch-action: none; /* Crucial para apps móviles: bloquea el scroll nativo */
+  touch-action: none; 
 }
 
-/* Animaciones existentes */
-@keyframes float-up {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  50% { transform: translateY(-40px) scale(1.2); }
-  100% { opacity: 0; transform: translateY(-80px) scale(1); }
+/* Efecto de estallido adictivo para los puntos */
+@keyframes float-pop {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.5) rotate(-10deg); }
+  20% { opacity: 1; transform: translate(-50%, -30px) scale(1.3) rotate(5deg); }
+  100% { opacity: 0; transform: translate(-50%, -80px) scale(0.8) rotate(0deg); }
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px) rotate(-1deg); }
-  75% { transform: translateX(5px) rotate(1deg); }
-}
-
-/* Nuevas animaciones de la Tienda y Frenesí */
-@keyframes gacha-shake {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  10%, 30%, 50%, 70%, 90% { transform: scale(1.1) rotate(-3deg); }
-  20%, 40%, 60%, 80% { transform: scale(1.1) rotate(3deg); }
-}
-
-@keyframes gacha-reveal {
-  0% { transform: scale(0.5); opacity: 0; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  25% { transform: translateX(-4px) rotate(-1deg); }
+  75% { transform: translateX(4px) rotate(1deg); }
 }
 
 @keyframes frenzy-flash {
   0%, 100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
-  50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: inset 0 0 60px rgba(239, 68, 68, 0.4); }
 }
 
-.animate-float-up { animation: float-up 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-float-pop { animation: float-pop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 .animate-shake { animation: shake 0.3s ease-in-out; }
-.animate-gacha-shake { animation: gacha-shake 1.5s ease-in-out forwards; }
-.animate-gacha-reveal { animation: gacha-reveal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 .animate-frenzy { animation: frenzy-flash 1s infinite; }
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+/* El "Juice" visual de los buckets al ser golpeados */
+.bucket-flash-jackpot {
+  background: radial-gradient(circle, rgba(250,204,21,0.8) 0%, rgba(250,204,21,0) 70%);
+  transform: scale(1.1);
+  transition: all 0.1s;
+}
+.bucket-flash-normal {
+  background: radial-gradient(circle, rgba(74,222,128,0.6) 0%, rgba(74,222,128,0) 70%);
+  transform: scale(1.05);
+  transition: all 0.1s;
+}
